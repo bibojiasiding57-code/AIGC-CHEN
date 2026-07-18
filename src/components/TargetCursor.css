@@ -1,0 +1,71 @@
+.target-cursor-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  color: var(--cursor-color, #A855F7);
+  filter: drop-shadow(0 0 7px rgb(168 85 247 / 55%));
+  transition: opacity 100ms ease;
+  will-change: transform;
+}
+
+.target-cursor-wrapper.is-visible {
+  opacity: 1;
+}
+
+.target-cursor-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--cursor-color, #A855F7);
+  transform: translate(-50%, -50%);
+  will-change: transform, background-color;
+}
+
+.target-cursor-corner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  box-sizing: border-box;
+  width: 12px;
+  height: 12px;
+  border: 3px solid var(--cursor-color, #A855F7);
+  will-change: transform, border-color;
+}
+
+.corner-tl {
+  transform: translate(-150%, -150%);
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.corner-tr {
+  transform: translate(50%, -150%);
+  border-left: 0;
+  border-bottom: 0;
+}
+
+.corner-br {
+  transform: translate(50%, 50%);
+  border-left: 0;
+  border-top: 0;
+}
+
+.corner-bl {
+  transform: translate(-150%, 50%);
+  border-right: 0;
+  border-top: 0;
+}
+
+@media (prefers-reduced-motion: reduce), (pointer: coarse), (max-width: 768px) {
+  .target-cursor-wrapper {
+    display: none;
+  }
+}
