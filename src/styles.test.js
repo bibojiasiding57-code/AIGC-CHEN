@@ -81,3 +81,19 @@ describe("Contact privacy layout", () => {
     expect(stylesheet).not.toContain(".pill-nav__phone");
   });
 });
+
+describe("Video loading feedback", () => {
+  it("keeps the loading overlay pointer-transparent", () => {
+    expect(stylesheet).toMatch(
+      /\.media-loading\s*\{[^}]*position:\s*absolute;[^}]*pointer-events:\s*none;/s,
+    );
+    expect(stylesheet).toContain(".media-loading__spinner");
+    expect(stylesheet).toContain(".works-dialog__media");
+  });
+
+  it("disables spinner animation when reduced motion is requested", () => {
+    expect(stylesheet).toMatch(
+      /@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.media-loading__spinner\s*\{[^}]*animation:\s*none;/,
+    );
+  });
+});
