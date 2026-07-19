@@ -1,9 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X } from "@phosphor-icons/react";
 
 export default function WorksVideoDialog({ project, onClose }) {
   const dialogRef = useRef(null);
   const videoRef = useRef(null);
+  const [isBuffering, setIsBuffering] = useState(false);
 
   const stopVideo = () => {
     const video = videoRef.current;
@@ -27,12 +28,14 @@ export default function WorksVideoDialog({ project, onClose }) {
     if (!dialog) return undefined;
 
     if (!project) {
+      setIsBuffering(false);
       if (dialog.open) dialog.close();
       return undefined;
     }
 
+    setIsBuffering(true);
     if (!dialog.open) dialog.showModal();
-    videoRef.current?.play().catch(() => undefined);
+    videoRef.current?.play().catch(() => setIsBuffering(false));
 
     return stopVideo;
   }, [project]);
@@ -61,16 +64,30 @@ export default function WorksVideoDialog({ project, onClose }) {
               <X aria-hidden="true" />
             </button>
           </div>
-          <video
+          <div className="works-dialog__media">
+            <video
             ref={videoRef}
             className="works-dialog__video"
             src={project.src}
             controls
             autoPlay
             playsInline
-            preload="metadata"
+            preload="auto"
+            onLoadStart={() => setIsBuffering(true)}
+            onWaiting={() => setIsBuffering(true)}
+            onStalled={() => setIsBuffering(true)}
+            onCanPlay={() => setIsBuffering(false)}
+            onPlaying={() => setIsBuffering(false)}
+            onError={() => setIsBuffering(false)}
             aria-label={`${project.title} 大尺寸视频`}
-          />
+            />
+            {isBuffering ? (
+              <span className="media-loading" role="status" aria-label="视频缓冲中">
+                <span className="media-loading__spinner" aria-hidden="true" />
+                <span>视频缓冲中</span>
+              </span>
+            ) : null}
+          </div>
         </div>
       ) : null}
     </dialog>

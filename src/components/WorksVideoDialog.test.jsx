@@ -40,7 +40,19 @@ describe("WorksVideoDialog", () => {
     expect(dialog).toHaveAttribute("open");
     expect(video).toHaveAttribute("src", project.src);
     expect(video).toHaveAttribute("controls");
+    expect(video).toHaveAttribute("preload", "auto");
     expect(play).toHaveBeenCalled();
+  });
+
+  it("shows buffering feedback until playback resumes", () => {
+    render(<WorksVideoDialog project={project} onClose={vi.fn()} />);
+    const video = screen.getByLabelText(`${project.title} 大尺寸视频`);
+
+    fireEvent.waiting(video);
+    expect(screen.getByRole("status", { name: "视频缓冲中" })).toBeInTheDocument();
+
+    fireEvent.playing(video);
+    expect(screen.queryByRole("status", { name: "视频缓冲中" })).not.toBeInTheDocument();
   });
 
   it("pauses and resets before closing", () => {
