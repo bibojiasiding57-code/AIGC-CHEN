@@ -1,0 +1,7 @@
+dist
+node_modules
+.pnpm-store
+.superpowers
+.agents
+docs
+public/media/works/*.mp4

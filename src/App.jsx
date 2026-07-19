@@ -17,7 +17,7 @@ import SectionHeading from "./components/SectionHeading";
 import SplitText from "./components/SplitText";
 import TargetCursor from "./components/TargetCursor";
 import WorksVideoDialog from "./components/WorksVideoDialog";
-import { characters, contact, navItems, projects } from "./data/portfolio";
+import { characters, contact, navItems, projects, resolveVideoSrc } from "./data/portfolio";
 import useLaserFlowEnabled from "./hooks/useLaserFlowEnabled";
 import { getCopyFeedback, getSectionId } from "./utils/ui";
 
@@ -155,7 +155,7 @@ export default function App() {
       <section className="hero" aria-labelledby="hero-title">
         <video
           className="hero__video"
-          src="/media/works/japanese-style-test.mp4"
+          src={resolveVideoSrc("/media/works/japanese-style-test.mp4")}
           autoPlay
           muted
           loop
@@ -375,7 +375,7 @@ export default function App() {
             <RevealMedia
               as="video"
               className="experience-media experience-media--video"
-              src="/media/works/test-success.mp4"
+              src={resolveVideoSrc("/media/works/test-success.mp4")}
               muted
               loop
               playsInline
