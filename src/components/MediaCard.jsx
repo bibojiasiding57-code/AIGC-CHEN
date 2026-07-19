@@ -3,11 +3,16 @@ import { ArrowUpRight, Play } from "@phosphor-icons/react";
 
 export default function MediaCard({ project, featured = false, onOpen }) {
   const mediaRef = useRef(null);
+  const visualRef = useRef(null);
   const [failed, setFailed] = useState(false);
+  const [isBuffering, setIsBuffering] = useState(false);
 
   const playPreview = () => {
     if (project.type === "video") {
-      mediaRef.current?.play().catch(() => undefined);
+      const media = mediaRef.current;
+      if (!media) return;
+      if (media.readyState < 3) setIsBuffering(true);
+      media.play().catch(() => setIsBuffering(false));
     }
   };
 
@@ -21,6 +26,25 @@ export default function MediaCard({ project, featured = false, onOpen }) {
   };
 
   useEffect(() => () => resetPreview(), [project.src]);
+
+  useEffect(() => {
+    if (project.type !== "video") return undefined;
+    const visual = visualRef.current;
+    const media = mediaRef.current;
+    if (!visual || !media || typeof IntersectionObserver === "undefined") return undefined;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        media.load();
+        observer.disconnect();
+      },
+      { rootMargin: "320px 0px" },
+    );
+
+    observer.observe(visual);
+    return () => observer.disconnect();
+  }, [project.src, project.type]);
 
   const openProject = () => {
     resetPreview();
@@ -38,6 +62,7 @@ export default function MediaCard({ project, featured = false, onOpen }) {
       </div>
 
       <div
+        ref={visualRef}
         className="media-card__visual"
         onPointerEnter={playPreview}
         onPointerLeave={resetPreview}
@@ -59,7 +84,15 @@ export default function MediaCard({ project, featured = false, onOpen }) {
             playsInline
             preload="metadata"
             aria-label={`${project.title} 视频预览`}
-            onError={() => setFailed(true)}
+            onLoadStart={() => setIsBuffering(true)}
+            onWaiting={() => setIsBuffering(true)}
+            onStalled={() => setIsBuffering(true)}
+            onCanPlay={() => setIsBuffering(false)}
+            onPlaying={() => setIsBuffering(false)}
+            onError={() => {
+              setIsBuffering(false);
+              setFailed(true);
+            }}
           />
         ) : (
           <img
@@ -69,6 +102,12 @@ export default function MediaCard({ project, featured = false, onOpen }) {
             onError={() => setFailed(true)}
           />
         )}
+        {isBuffering && !failed ? (
+          <span className="media-loading" role="status" aria-label="视频缓冲中">
+            <span className="media-loading__spinner" aria-hidden="true" />
+            <span>视频缓冲中</span>
+          </span>
+        ) : null}
         {project.type === "video" ? (
           <button
             className="media-card__play"

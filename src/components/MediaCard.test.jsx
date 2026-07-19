@@ -15,10 +15,20 @@ const project = {
 describe("MediaCard", () => {
   let play;
   let pause;
+  let intersectionCallback;
+  let observe;
+  let disconnect;
 
   beforeEach(() => {
     play = vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue();
     pause = vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+    observe = vi.fn();
+    disconnect = vi.fn();
+    globalThis.IntersectionObserver = vi.fn(function IntersectionObserver(callback) {
+      intersectionCallback = callback;
+      this.observe = observe;
+      this.disconnect = disconnect;
+    });
   });
 
   afterEach(() => {
@@ -37,6 +47,30 @@ describe("MediaCard", () => {
     fireEvent.pointerLeave(visual);
     expect(pause).toHaveBeenCalled();
     expect(video.currentTime).toBe(0);
+  });
+
+  it("prewarms video near the viewport", () => {
+    const load = vi.spyOn(HTMLMediaElement.prototype, "load").mockImplementation(() => {});
+    const { container } = render(<MediaCard project={project} />);
+    const video = container.querySelector("video");
+
+    expect(observe).toHaveBeenCalledWith(container.querySelector(".media-card__visual"));
+    intersectionCallback([{ isIntersecting: true }]);
+
+    expect(load).toHaveBeenCalledTimes(1);
+    expect(video).toHaveAttribute("preload", "metadata");
+    expect(disconnect).toHaveBeenCalled();
+  });
+
+  it("shows buffering feedback until the preview can play", () => {
+    const { container } = render(<MediaCard project={project} />);
+    const video = container.querySelector("video");
+
+    fireEvent.waiting(video);
+    expect(screen.getByRole("status", { name: "视频缓冲中" })).toBeInTheDocument();
+
+    fireEvent.canPlay(video);
+    expect(screen.queryByRole("status", { name: "视频缓冲中" })).not.toBeInTheDocument();
   });
 
   it("opens the project on visual double click", () => {
