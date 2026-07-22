@@ -4,4 +4,4 @@ node_modules
 .superpowers
 .agents
 docs
-public/media/works/*.mp4
+public/media/works
