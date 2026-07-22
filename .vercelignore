@@ -5,4 +5,4 @@ node_modules
 .agents
 .worktrees
 docs
-public/media/works
+public/media/works/*.mp4

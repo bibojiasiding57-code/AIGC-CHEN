@@ -41,6 +41,14 @@ describe("Works project data", () => {
       "/media/works/mv-vlog.mp4",
     ]);
   });
+
+  it("binds one stable WebP poster to every project", () => {
+    expect(projects).toHaveLength(14);
+    expect(
+      projects.every(({ id, poster }) => poster === `/media/works/posters/${id}.webp`),
+    ).toBe(true);
+    expect(new Set(projects.map(({ poster }) => poster)).size).toBe(14);
+  });
 });
 
 describe("Character data", () => {
