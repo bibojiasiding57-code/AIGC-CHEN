@@ -597,6 +597,12 @@ video {
   gap: clamp(14px, 1.8vw, 28px);
 }
 
+@media (min-width: 1500px) {
+  .project-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 .media-card {
   min-width: 0;
   padding: clamp(18px, 1.7vw, 28px);

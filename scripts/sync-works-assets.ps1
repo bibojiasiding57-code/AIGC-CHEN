@@ -8,12 +8,10 @@ $map = [ordered]@{
   '做着玩的' = 'play-study.mp4'
   'fs21' = 'fs21.mp4'
   'pv' = 'pv.mp4'
-  '汽车广告' = 'car-ad.mp4'
   '测试成功' = 'test-success.mp4'
   '好想回到那个时候' = 'back-to-that-time.mp4'
   '日系风格测试' = 'japanese-style-test.mp4'
   '风格测试' = 'style-test.mp4'
-  '仿真人短剧' = 'realistic-short-drama.mp4'
   '暗夜风格' = 'dark-night-style.mp4'
   'vlog.mv' = 'vlog-mv.mp4'
   'vlog' = 'vlog.mp4'
@@ -51,7 +49,7 @@ $expectedNames = @($map.Values | Sort-Object)
 $actualNames = @(Get-ChildItem -LiteralPath $Destination -Filter '*.mp4' | Select-Object -ExpandProperty Name | Sort-Object)
 
 if (Compare-Object -ReferenceObject $expectedNames -DifferenceObject $actualNames) {
-  throw 'Destination MP4 files do not exactly match the 14 configured works.'
+  throw 'Destination MP4 files do not exactly match the 12 configured works.'
 }
 
 Write-Output "Synced $($actualNames.Count) works videos to $Destination"

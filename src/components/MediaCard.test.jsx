@@ -9,7 +9,7 @@ const project = {
   category: "AI FILM / AUTOMOTIVE",
   year: "2026",
   type: "video",
-  src: "/media/works/avatr-ad.mp4",
+  src: "/videos/avatr-ad.mp4",
   poster: "/media/works/posters/avatr-ad.webp",
   tone: "amber",
 };
@@ -18,7 +18,7 @@ const secondProject = {
   ...project,
   id: "pv",
   title: "PV",
-  src: "/media/works/pv.mp4",
+  src: "/videos/pv.mp4",
   poster: "/media/works/posters/pv.webp",
 };
 
@@ -39,45 +39,24 @@ describe("MediaCard bandwidth ownership", () => {
 
   afterEach(() => vi.restoreAllMocks());
 
-  it("keeps the video physically disconnected until hover intent", () => {
+  it("renders a poster-only video container without mounting a work video source", () => {
     const { container } = renderCards(<MediaCard project={project} />);
     const visual = container.querySelector(".media-card__visual");
-    const video = container.querySelector("video");
+    const posterVideo = container.querySelector("video.media-card__poster");
 
-    expect(video).not.toHaveAttribute("src");
+    expect(visual).toHaveAttribute("data-video-src", project.src);
+    expect(posterVideo).toHaveAttribute("poster", project.poster);
+    expect(posterVideo).toHaveAttribute("preload", "none");
+    expect(posterVideo).not.toHaveAttribute("src");
     fireEvent.pointerEnter(visual);
-    expect(video).toHaveAttribute("src", project.src);
-    expect(play).toHaveBeenCalled();
-
-    fireEvent.pointerLeave(visual);
-    expect(video).not.toHaveAttribute("src");
-    expect(pause).toHaveBeenCalled();
-    expect(load).toHaveBeenCalled();
-  });
-
-  it("allows only the most recently hovered card to retain a source", () => {
-    const { container } = renderCards(
-      <>
-        <MediaCard project={project} />
-        <MediaCard project={secondProject} />
-      </>,
-    );
-    const visuals = container.querySelectorAll(".media-card__visual");
-    const videos = container.querySelectorAll("video");
-
-    fireEvent.pointerEnter(visuals[0]);
-    expect(videos[0]).toHaveAttribute("src", project.src);
-    fireEvent.pointerEnter(visuals[1]);
-    expect(videos[0]).not.toHaveAttribute("src");
-    expect(videos[1]).toHaveAttribute("src", secondProject.src);
+    expect(play).not.toHaveBeenCalled();
   });
 
   it("uses the poster while disconnected and removes custom loading overlays", () => {
     const { container } = renderCards(<MediaCard project={project} />);
-    const poster = container.querySelector(".media-card__poster");
+    const poster = container.querySelector("video.media-card__poster");
 
-    expect(poster).toHaveAttribute("src", project.poster);
-    expect(poster).toHaveAttribute("data-visible", "true");
+    expect(poster).toHaveAttribute("poster", project.poster);
     expect(container.querySelector(".video-loading")).not.toBeInTheDocument();
   });
 

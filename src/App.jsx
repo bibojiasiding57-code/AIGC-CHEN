@@ -50,7 +50,7 @@ function AppContent() {
   useVideoBandwidthRegistration({
     id: "hero",
     group: "idle",
-    src: resolveVideoSrc("/media/works/japanese-style-test.mp4"),
+    src: resolveVideoSrc("/videos/japanese-style-test.mp4"),
     mediaRef: heroVideoRef,
   });
 
@@ -173,6 +173,7 @@ function AppContent() {
           muted
           loop
           playsInline
+          webkit-playsinline="true"
           preload="auto"
           aria-label="AIGC-CHEN 日系风格影像"
         />
@@ -334,7 +335,7 @@ function AppContent() {
 
         <div className="works-titleline">
           <h3 id="works-title">SELECTED PROJECTS</h3>
-          <span>14 PROJECTS / 2026</span>
+          <span>12 PROJECTS / 2026</span>
         </div>
 
         <div className="project-grid">
@@ -387,7 +388,7 @@ function AppContent() {
             />
             <ExperienceVideo
               className="experience-media experience-media--video"
-              src={resolveVideoSrc("/media/works/test-success.mp4")}
+              src={resolveVideoSrc("/videos/test-success.mp4")}
               poster="/media/works/posters/test-success.webp"
               ariaLabel="测试成功动态影像"
             />

@@ -62,7 +62,7 @@ describe("AIGC-CHEN portfolio", () => {
     expect(sparkRoot.querySelector("main.site-shell")).toBeInTheDocument();
     expect(characterSection).toContainElement(screen.getByTestId("target-cursor"));
     expect(characterSection.querySelectorAll(".cursor-target")).toHaveLength(6);
-    expect(projectGrid.querySelectorAll(":scope > .media-card")).toHaveLength(14);
+    expect(projectGrid.querySelectorAll(":scope > .media-card")).toHaveLength(12);
     expect(container.querySelector(".border-glow-card")).not.toBeInTheDocument();
     expect(container.querySelector(".bento-grid")).not.toBeInTheDocument();
   });
@@ -95,7 +95,7 @@ describe("AIGC-CHEN portfolio", () => {
     render(<App />);
     const video = screen.getByLabelText("AIGC-CHEN 日系风格影像");
 
-    expect(video).toHaveAttribute("src", "/media/works/japanese-style-test.mp4");
+    expect(video).toHaveAttribute("src", "/videos/japanese-style-test.mp4");
     expect(video).toHaveAttribute("poster", "/media/works/posters/japanese-style-test.webp");
     expect(screen.queryByRole("link", { name: "SCROLL" })).not.toBeInTheDocument();
   });
@@ -104,7 +104,7 @@ describe("AIGC-CHEN portfolio", () => {
     render(<App />);
 
     const video = screen.getByLabelText("测试成功动态影像");
-    expect(video).toHaveAttribute("src", "/media/works/test-success.mp4");
+    expect(video).toHaveAttribute("src", "/videos/test-success.mp4");
     expect(video).toHaveAttribute("poster", "/media/works/posters/test-success.webp");
     expect(video).toHaveAttribute("preload", "metadata");
 
@@ -118,10 +118,10 @@ describe("AIGC-CHEN portfolio", () => {
     );
   });
 
-  it("renders all 14 works in the confirmed DOM order", () => {
+  it("renders the final 12 works in the confirmed DOM order", () => {
     const expectedTitles = [
-      "啊维塔广告", "做着玩的", "fs21", "pv", "汽车广告", "测试成功",
-      "好想回到那个时候", "日系风格测试", "风格测试", "仿真人短剧",
+      "啊维塔广告", "做着玩的", "fs21", "pv", "测试成功",
+      "好想回到那个时候", "日系风格测试", "风格测试",
       "暗夜风格", "vlog.mv", "vlog", "mv.vlog",
     ];
     const { container } = render(<App />);
@@ -129,7 +129,7 @@ describe("AIGC-CHEN portfolio", () => {
       (heading) => heading.textContent,
     );
 
-    expect(screen.getByText("14 PROJECTS / 2026")).toBeVisible();
+    expect(screen.getByText("12 PROJECTS / 2026")).toBeVisible();
     expect(titles).toEqual(expectedTitles);
   });
 

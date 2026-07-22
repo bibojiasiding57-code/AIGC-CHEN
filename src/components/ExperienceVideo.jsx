@@ -27,6 +27,7 @@ export default function ExperienceVideo({ id = "experience", src, poster, classN
       muted
       loop
       playsInline
+      webkit-playsinline="true"
       autoPlay
       preload="metadata"
       poster={poster}

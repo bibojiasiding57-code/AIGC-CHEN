@@ -73,7 +73,10 @@ export default function WorksVideoDialog({ project, onClose }) {
               poster={project.poster}
               controls={true}
               autoPlay
+              muted
+              loop
               playsInline
+              webkit-playsinline="true"
               preload="auto"
               aria-label={`${project.title} 大尺寸视频`}
             />

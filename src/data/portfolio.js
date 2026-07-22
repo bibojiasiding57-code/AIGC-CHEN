@@ -1,8 +1,4 @@
-const productionVideoBase =
-  "https://media.githubusercontent.com/media/bibojiasiding57-code/AIGC-CHEN/main/public";
-
-export const resolveVideoSrc = (path) =>
-  import.meta.env.PROD ? `${productionVideoBase}${path}` : path;
+export const resolveVideoSrc = (path) => path;
 
 export const navItems = [
   { label: "角色介绍", href: "#about" },
@@ -94,7 +90,7 @@ export const projects = [
     category: "AI FILM / AUTOMOTIVE",
     year: "2026",
     type: "video",
-    src: resolveVideoSrc("/media/works/avatr-ad.mp4"),
+    src: resolveVideoSrc("/videos/avatr-ad.mp4"),
     poster: "/media/works/posters/avatr-ad.webp",
     tone: "amber",
   },
@@ -104,7 +100,7 @@ export const projects = [
     category: "AIGC / VISUAL STUDY",
     year: "2026",
     type: "video",
-    src: resolveVideoSrc("/media/works/play-study.mp4"),
+    src: resolveVideoSrc("/videos/play-study.mp4"),
     poster: "/media/works/posters/play-study.webp",
     tone: "cream",
   },
@@ -114,7 +110,7 @@ export const projects = [
     category: "AI FILM / EXPERIMENT",
     year: "2026",
     type: "video",
-    src: resolveVideoSrc("/media/works/fs21.mp4"),
+    src: resolveVideoSrc("/videos/fs21.mp4"),
     poster: "/media/works/posters/fs21.webp",
     tone: "pink",
   },
@@ -124,19 +120,9 @@ export const projects = [
     category: "PROMO VIDEO / MOTION",
     year: "2026",
     type: "video",
-    src: resolveVideoSrc("/media/works/pv.mp4"),
+    src: resolveVideoSrc("/videos/pv.mp4"),
     poster: "/media/works/posters/pv.webp",
     tone: "sky",
-  },
-  {
-    id: "car-ad",
-    title: "汽车广告",
-    category: "BRAND FILM / AUTOMOTIVE",
-    year: "2026",
-    type: "video",
-    src: resolveVideoSrc("/media/works/car-ad.mp4"),
-    poster: "/media/works/posters/car-ad.webp",
-    tone: "blue",
   },
   {
     id: "test-success",
@@ -144,7 +130,7 @@ export const projects = [
     category: "AIGC / MOTION TEST",
     year: "2026",
     type: "video",
-    src: resolveVideoSrc("/media/works/test-success.mp4"),
+    src: resolveVideoSrc("/videos/test-success.mp4"),
     poster: "/media/works/posters/test-success.webp",
     tone: "red",
   },
@@ -154,7 +140,7 @@ export const projects = [
     category: "AI FILM / MEMORY",
     year: "2026",
     type: "video",
-    src: resolveVideoSrc("/media/works/back-to-that-time.mp4"),
+    src: resolveVideoSrc("/videos/back-to-that-time.mp4"),
     poster: "/media/works/posters/back-to-that-time.webp",
     tone: "cream",
   },
@@ -164,16 +150,15 @@ export const projects = [
     category: "STYLE STUDY / JAPAN",
     year: "2026",
     type: "video",
-    src: resolveVideoSrc("/media/works/japanese-style-test.mp4"),
+    src: resolveVideoSrc("/videos/japanese-style-test.mp4"),
     poster: "/media/works/posters/japanese-style-test.webp",
     tone: "denim",
   },
-  { id: "style-test", title: "风格测试", category: "VISUAL TEST / AIGC", year: "2026", type: "video", src: resolveVideoSrc("/media/works/style-test.mp4"), poster: "/media/works/posters/style-test.webp", tone: "amber" },
-  { id: "realistic-short-drama", title: "仿真人短剧", category: "AI DRAMA / CHARACTER", year: "2026", type: "video", src: resolveVideoSrc("/media/works/realistic-short-drama.mp4"), poster: "/media/works/posters/realistic-short-drama.webp", tone: "night" },
-  { id: "dark-night-style", title: "暗夜风格", category: "DARK STYLE / FILM", year: "2026", type: "video", src: resolveVideoSrc("/media/works/dark-night-style.mp4"), poster: "/media/works/posters/dark-night-style.webp", tone: "pink" },
-  { id: "vlog-mv", title: "vlog.mv", category: "VLOG / MUSIC VIDEO", year: "2026", type: "video", src: resolveVideoSrc("/media/works/vlog-mv.mp4"), poster: "/media/works/posters/vlog-mv.webp", tone: "sky" },
-  { id: "vlog", title: "vlog", category: "VLOG / DAILY FILM", year: "2026", type: "video", src: resolveVideoSrc("/media/works/vlog.mp4"), poster: "/media/works/posters/vlog.webp", tone: "blue" },
-  { id: "mv-vlog", title: "mv.vlog", category: "MUSIC VIDEO / VLOG", year: "2026", type: "video", src: resolveVideoSrc("/media/works/mv-vlog.mp4"), poster: "/media/works/posters/mv-vlog.webp", tone: "red" },
+  { id: "style-test", title: "风格测试", category: "VISUAL TEST / AIGC", year: "2026", type: "video", src: resolveVideoSrc("/videos/style-test.mp4"), poster: "/media/works/posters/style-test.webp", tone: "amber" },
+  { id: "dark-night-style", title: "暗夜风格", category: "DARK STYLE / FILM", year: "2026", type: "video", src: resolveVideoSrc("/videos/dark-night-style.mp4"), poster: "/media/works/posters/dark-night-style.webp", tone: "pink" },
+  { id: "vlog-mv", title: "vlog.mv", category: "VLOG / MUSIC VIDEO", year: "2026", type: "video", src: resolveVideoSrc("/videos/vlog-mv.mp4"), poster: "/media/works/posters/vlog-mv.webp", tone: "sky" },
+  { id: "vlog", title: "vlog", category: "VLOG / DAILY FILM", year: "2026", type: "video", src: resolveVideoSrc("/videos/vlog.mp4"), poster: "/media/works/posters/vlog.webp", tone: "blue" },
+  { id: "mv-vlog", title: "mv.vlog", category: "MUSIC VIDEO / VLOG", year: "2026", type: "video", src: resolveVideoSrc("/videos/mv-vlog.mp4"), poster: "/media/works/posters/mv-vlog.webp", tone: "red" },
 ];
 
 export const contact = {

@@ -19,11 +19,7 @@ function Harness() {
     <>
       <RegisteredVideo id="hero" group="idle" src="/hero.mp4" />
       <RegisteredVideo id="experience" group="idle" src="/experience.mp4" />
-      <RegisteredVideo id="card-a" group="preview" src="/card-a.mp4" />
-      <RegisteredVideo id="card-b" group="preview" src="/card-b.mp4" />
       <RegisteredVideo id="dialog" group="modal" src="/dialog.mp4" />
-      <button onClick={() => bandwidth.activatePreview("card-a")}>preview</button>
-      <button onClick={() => bandwidth.releasePreview("card-a")}>leave</button>
       <button onClick={() => bandwidth.activateModal("dialog")}>modal</button>
       <button onClick={() => bandwidth.releaseModal("dialog")}>close</button>
     </>
@@ -39,7 +35,7 @@ describe("VideoBandwidthProvider", () => {
 
   afterEach(() => vi.restoreAllMocks());
 
-  it("physically disconnects downgraded videos across idle, preview, and modal priority", () => {
+  it("pauses idle videos without clearing their sources while the modal owns bandwidth", () => {
     render(
       <VideoBandwidthProvider>
         <Harness />
@@ -48,34 +44,24 @@ describe("VideoBandwidthProvider", () => {
 
     const hero = screen.getByTestId("hero");
     const experience = screen.getByTestId("experience");
-    const cardA = screen.getByTestId("card-a");
-    const cardB = screen.getByTestId("card-b");
     const dialog = screen.getByTestId("dialog");
 
     expect(hero).toHaveAttribute("src", "/hero.mp4");
     expect(experience).toHaveAttribute("src", "/experience.mp4");
-    expect(cardA).not.toHaveAttribute("src");
-
-    fireEvent.click(screen.getByRole("button", { name: "preview" }));
-    expect(cardA).toHaveAttribute("src", "/card-a.mp4");
-    expect(hero).not.toHaveAttribute("src");
-    expect(experience).not.toHaveAttribute("src");
-    expect(cardB).not.toHaveAttribute("src");
+    expect(dialog).not.toHaveAttribute("src");
 
     fireEvent.click(screen.getByRole("button", { name: "modal" }));
     expect(dialog).toHaveAttribute("src", "/dialog.mp4");
-    expect(cardA).not.toHaveAttribute("src");
-    expect(hero).not.toHaveAttribute("src");
+    expect(hero).toHaveAttribute("src", "/hero.mp4");
+    expect(experience).toHaveAttribute("src", "/experience.mp4");
+    expect(hero.pause).toHaveBeenCalled();
+    expect(experience.pause).toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole("button", { name: "close" }));
     expect(hero).toHaveAttribute("src", "/hero.mp4");
     expect(experience).toHaveAttribute("src", "/experience.mp4");
     expect(dialog).not.toHaveAttribute("src");
-
-    fireEvent.click(screen.getByRole("button", { name: "preview" }));
-    fireEvent.click(screen.getByRole("button", { name: "leave" }));
-    expect(hero).toHaveAttribute("src", "/hero.mp4");
-    expect(experience).toHaveAttribute("src", "/experience.mp4");
-    expect(cardA).not.toHaveAttribute("src");
+    expect(hero.play).toHaveBeenCalled();
+    expect(experience.play).toHaveBeenCalled();
   });
 });

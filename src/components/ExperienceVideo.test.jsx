@@ -6,12 +6,12 @@ import {
   useVideoBandwidthController,
 } from "../video/VideoBandwidthContext";
 
-function PreviewControls() {
+function ModalControls() {
   const bandwidth = useVideoBandwidthController();
   return (
     <>
-      <button onClick={() => bandwidth.activatePreview("card")}>preview</button>
-      <button onClick={() => bandwidth.releasePreview("card")}>leave</button>
+      <button onClick={() => bandwidth.activateModal("dialog")}>open</button>
+      <button onClick={() => bandwidth.releaseModal("dialog")}>close</button>
     </>
   );
 }
@@ -26,23 +26,25 @@ describe("ExperienceVideo", () => {
 
   afterEach(() => vi.restoreAllMocks());
 
-  it("loops in idle, disconnects during preview, and restores after preview release", () => {
+  it("loops in idle, pauses without source destruction for a modal, and resumes after close", () => {
     render(
       <VideoBandwidthProvider>
-        <ExperienceVideo id="experience" src="/media/works/test-success.mp4" ariaLabel="Experience" />
-        <PreviewControls />
+        <ExperienceVideo id="experience" src="/videos/test-success.mp4" ariaLabel="Experience" />
+        <ModalControls />
       </VideoBandwidthProvider>,
     );
 
     const video = screen.getByLabelText("Experience");
-    expect(video).toHaveAttribute("src", "/media/works/test-success.mp4");
+    expect(video).toHaveAttribute("src", "/videos/test-success.mp4");
     expect(video).toHaveAttribute("autoplay");
     expect(video).toHaveAttribute("loop");
     expect(video).toHaveAttribute("playsinline");
 
-    fireEvent.click(screen.getByRole("button", { name: "preview" }));
-    expect(video).not.toHaveAttribute("src");
-    fireEvent.click(screen.getByRole("button", { name: "leave" }));
-    expect(video).toHaveAttribute("src", "/media/works/test-success.mp4");
+    fireEvent.click(screen.getByRole("button", { name: "open" }));
+    expect(video).toHaveAttribute("src", "/videos/test-success.mp4");
+    expect(video.pause).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "close" }));
+    expect(video).toHaveAttribute("src", "/videos/test-success.mp4");
+    expect(video.play).toHaveBeenCalled();
   });
 });

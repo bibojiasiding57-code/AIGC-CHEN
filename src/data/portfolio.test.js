@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { characters, contact, projects } from "./portfolio";
+import { characters, contact, projects, resolveVideoSrc } from "./portfolio";
 
 const expectedCharacters = [
   ["neo-youth-icon", "YOUTH CULTURE / POP AESTHETICS", "Neo-Youth Icon", "新世代青春图鉴"],
@@ -15,12 +15,10 @@ const expectedTitles = [
   "做着玩的",
   "fs21",
   "pv",
-  "汽车广告",
   "测试成功",
   "好想回到那个时候",
   "日系风格测试",
   "风格测试",
-  "仿真人短剧",
   "暗夜风格",
   "vlog.mv",
   "vlog",
@@ -28,26 +26,33 @@ const expectedTitles = [
 ];
 
 describe("Works project data", () => {
-  it("keeps all 14 projects in the confirmed reading order", () => {
+  it("keeps all 12 projects in the confirmed reading order", () => {
     expect(projects.map(({ title }) => title)).toEqual(expectedTitles);
-    expect(new Set(projects.map(({ id }) => id)).size).toBe(14);
+    expect(projects).toHaveLength(12);
+    expect(new Set(projects.map(({ id }) => id)).size).toBe(12);
+    expect(projects.some(({ id }) => id === "car-ad" || id === "realistic-short-drama")).toBe(false);
     expect(projects.every(({ type }) => type === "video")).toBe(true);
   });
 
   it("keeps the vlog-like sources unambiguous", () => {
-    expect(projects.slice(11).map(({ src }) => src)).toEqual([
-      "/media/works/vlog-mv.mp4",
-      "/media/works/vlog.mp4",
-      "/media/works/mv-vlog.mp4",
+    expect(projects.slice(9).map(({ src }) => src)).toEqual([
+      "/videos/vlog-mv.mp4",
+      "/videos/vlog.mp4",
+      "/videos/mv-vlog.mp4",
     ]);
   });
 
   it("binds one stable WebP poster to every project", () => {
-    expect(projects).toHaveLength(14);
+    expect(projects).toHaveLength(12);
     expect(
       projects.every(({ id, poster }) => poster === `/media/works/posters/${id}.webp`),
     ).toBe(true);
-    expect(new Set(projects.map(({ poster }) => poster)).size).toBe(14);
+    expect(new Set(projects.map(({ poster }) => poster)).size).toBe(12);
+  });
+
+  it("uses only Vercel-local optimized MP4 paths", () => {
+    expect(projects.every(({ src }) => /^\/videos\/[a-z0-9-]+\.mp4$/.test(src))).toBe(true);
+    expect(resolveVideoSrc("/videos/example.mp4")).toBe("/videos/example.mp4");
   });
 });
 

@@ -10,26 +10,35 @@ import {
 
 const VideoBandwidthContext = createContext(null);
 
-function disconnectVideo(video) {
-  if (!video) return;
-  video.pause();
-  video.removeAttribute("src");
-  video.src = "";
-  video.removeAttribute("src");
-  video.load();
-}
-
-function connectVideo(entry) {
+function ensureSource(entry) {
   const video = entry.mediaRef.current;
   if (!video || !entry.src) return;
   if (video.getAttribute("src") !== entry.src) {
     video.setAttribute("src", entry.src);
     video.load();
   }
-  if (entry.group !== "modal") {
-    video.muted = true;
-  }
+}
+
+function playVideo(entry) {
+  const video = entry.mediaRef.current;
+  if (!video) return;
+  ensureSource(entry);
+  if (entry.group === "idle") video.muted = true;
   video.play()?.catch?.(() => {});
+}
+
+function pauseVideo(entry) {
+  entry.mediaRef.current?.pause();
+}
+
+function unloadModal(entry) {
+  const video = entry.mediaRef.current;
+  if (!video) return;
+  video.pause();
+  video.removeAttribute("src");
+  video.src = "";
+  video.removeAttribute("src");
+  video.load();
 }
 
 export function VideoBandwidthProvider({ children }) {
@@ -42,40 +51,31 @@ export function VideoBandwidthProvider({ children }) {
     setRegistryVersion((version) => version + 1);
     return () => {
       const current = registryRef.current.get(entry.id);
-      if (current === entry) {
-        registryRef.current.delete(entry.id);
-        setRegistryVersion((version) => version + 1);
-      }
+      if (current !== entry) return;
+      if (entry.group === "modal") unloadModal(entry);
+      else pauseVideo(entry);
+      registryRef.current.delete(entry.id);
+      setRegistryVersion((version) => version + 1);
     };
   }, []);
 
   useLayoutEffect(() => {
     const entries = [...registryRef.current.values()];
-    const isEligible = (entry) => {
-      if (ownership.mode === "idle") return entry.group === "idle";
-      return entry.id === ownership.ownerId && entry.group === ownership.mode;
-    };
+    if (ownership.mode === "modal") {
+      entries.forEach((entry) => {
+        if (entry.group === "idle") pauseVideo(entry);
+        else if (entry.id === ownership.ownerId) playVideo(entry);
+        else unloadModal(entry);
+      });
+      return;
+    }
 
     entries.forEach((entry) => {
-      if (!isEligible(entry)) disconnectVideo(entry.mediaRef.current);
-    });
-    entries.forEach((entry) => {
-      if (isEligible(entry)) connectVideo(entry);
+      if (entry.group === "idle") playVideo(entry);
+      else unloadModal(entry);
     });
   }, [ownership, registryVersion]);
 
-  const activatePreview = useCallback((ownerId) => {
-    setOwnership((current) =>
-      current.mode === "modal" ? current : { mode: "preview", ownerId },
-    );
-  }, []);
-  const releasePreview = useCallback((ownerId) => {
-    setOwnership((current) =>
-      current.mode === "preview" && current.ownerId === ownerId
-        ? { mode: "idle", ownerId: null }
-        : current,
-    );
-  }, []);
   const activateModal = useCallback((ownerId) => {
     setOwnership({ mode: "modal", ownerId });
   }, []);
@@ -88,15 +88,8 @@ export function VideoBandwidthProvider({ children }) {
   }, []);
 
   const controller = useMemo(
-    () => ({
-      ownership,
-      register,
-      activatePreview,
-      releasePreview,
-      activateModal,
-      releaseModal,
-    }),
-    [activateModal, activatePreview, ownership, register, releaseModal, releasePreview],
+    () => ({ ownership, register, activateModal, releaseModal }),
+    [activateModal, ownership, register, releaseModal],
   );
 
   return <VideoBandwidthContext.Provider value={controller}>{children}</VideoBandwidthContext.Provider>;

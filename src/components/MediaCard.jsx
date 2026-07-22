@@ -1,55 +1,7 @@
-import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, Play } from "@phosphor-icons/react";
-import {
-  useVideoBandwidthController,
-  useVideoBandwidthRegistration,
-} from "../video/VideoBandwidthContext";
 
 export default function MediaCard({ project, featured = false, onOpen }) {
-  const mediaRef = useRef(null);
-  const [failed, setFailed] = useState(false);
-  const [hasFrame, setHasFrame] = useState(false);
-  const [isBuffering, setIsBuffering] = useState(false);
-  const ownerId = `preview:${project.id}`;
-  const bandwidth = useVideoBandwidthController();
-  const containerRef = useRef(null);
-  useVideoBandwidthRegistration({
-    id: ownerId,
-    group: "preview",
-    src: project.type === "video" ? project.src : undefined,
-    mediaRef,
-  });
-  const isActive = bandwidth.ownership.mode === "preview" && bandwidth.ownership.ownerId === ownerId;
-
-  const playPreview = () => {
-    if (project.type === "video") {
-      setHasFrame(false);
-      setIsBuffering(true);
-      bandwidth.activatePreview(ownerId);
-    }
-  };
-
-  const resetPreview = () => {
-    if (project.type === "video") {
-      bandwidth.releasePreview(ownerId);
-      setHasFrame(false);
-      setIsBuffering(false);
-    }
-  };
-
-  useEffect(() => () => resetPreview(), [project.src]);
-
-  useEffect(() => {
-    if (isActive) return;
-    setHasFrame(false);
-    setIsBuffering(false);
-  }, [isActive]);
-
-  const openProject = () => {
-    resetPreview();
-    if (onOpen) bandwidth.activateModal(`modal:${project.id}`);
-    onOpen?.(project);
-  };
+  const openProject = () => onOpen?.(project);
 
   return (
     <article
@@ -62,73 +14,20 @@ export default function MediaCard({ project, featured = false, onOpen }) {
       </div>
 
       <div
-        ref={containerRef}
         className="media-card__visual"
-        onPointerEnter={playPreview}
-        onPointerLeave={resetPreview}
-        onFocus={playPreview}
-        onBlur={resetPreview}
+        data-video-src={project.src}
         onDoubleClick={openProject}
       >
-        {failed ? (
-          <div className="media-card__fallback" role="img" aria-label={`${project.title} 媒体暂不可用`}>
-            <span>AIGC-CHEN</span>
-          </div>
-        ) : project.type === "video" ? (
-          <video
-            ref={mediaRef}
-            poster={project.poster}
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            aria-label={`${project.title} 视频预览`}
-            onLoadStart={() => {
-              setHasFrame(false);
-              setIsBuffering(true);
-            }}
-            onWaiting={() => {
-              setHasFrame(false);
-              setIsBuffering(true);
-            }}
-            onStalled={() => {
-              setHasFrame(false);
-              setIsBuffering(true);
-            }}
-            onLoadedData={() => {
-              setHasFrame(true);
-              setIsBuffering(false);
-            }}
-            onCanPlay={() => {
-              setHasFrame(true);
-              setIsBuffering(false);
-            }}
-            onPlaying={() => {
-              setHasFrame(true);
-              setIsBuffering(false);
-            }}
-            onError={() => {
-              setIsBuffering(false);
-              setFailed(true);
-            }}
-          />
-        ) : (
-          <img
-            src={project.src}
-            alt={`${project.title} 项目视觉`}
-            loading="lazy"
-            onError={() => setFailed(true)}
-          />
-        )}
-        {project.type === "video" && !failed ? (
-          <img
-            className="media-card__poster"
-            src={project.poster}
-            alt=""
-            aria-hidden="true"
-            data-visible={String(!hasFrame || isBuffering)}
-          />
-        ) : null}
+        <video
+          className="media-card__poster"
+          poster={project.poster}
+          preload="none"
+          muted
+          loop
+          playsInline
+          webkit-playsinline="true"
+          aria-label={`${project.title} 项目封面`}
+        />
         {project.type === "video" ? (
           <button
             className="media-card__play"

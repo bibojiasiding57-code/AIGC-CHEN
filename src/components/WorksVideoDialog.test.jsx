@@ -10,7 +10,7 @@ const project = {
   category: "AI FILM / AUTOMOTIVE",
   year: "2026",
   type: "video",
-  src: "/media/works/avatr-ad.mp4",
+  src: "/videos/avatr-ad.mp4",
   poster: "/media/works/posters/avatr-ad.webp",
   tone: "amber",
 };
@@ -40,7 +40,7 @@ describe("WorksVideoDialog", () => {
     );
   }
 
-  it("gives the modal exclusive source ownership and native controls", () => {
+  it("pauses idle playback without clearing its source and gives the modal native controls", () => {
     const { container } = renderDialog();
     const experience = screen.getByLabelText("Experience");
     const modal = container.querySelector(".works-dialog__video");
@@ -48,7 +48,8 @@ describe("WorksVideoDialog", () => {
     expect(modal).toHaveAttribute("src", project.src);
     expect(modal).toHaveAttribute("controls");
     expect(modal).toHaveAttribute("preload", "auto");
-    expect(experience).not.toHaveAttribute("src");
+    expect(experience).toHaveAttribute("src", "/experience.mp4");
+    expect(experience.pause).toHaveBeenCalled();
     expect(container.querySelector(".video-loading")).not.toBeInTheDocument();
   });
 
