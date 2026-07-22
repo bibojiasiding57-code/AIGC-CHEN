@@ -660,15 +660,18 @@ video {
   transform: scale(1.035);
 }
 
-.media-loading {
+.video-loading {
   position: absolute;
   inset: 0;
   z-index: 1;
   display: grid;
-  place-content: center;
-  gap: 0.55rem;
+  place-items: center;
+  overflow: hidden;
   color: rgba(255, 255, 255, 0.88);
-  background: linear-gradient(180deg, transparent 35%, rgba(6, 18, 22, 0.28));
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255, 185, 105, 0.22), transparent 46%),
+    linear-gradient(135deg, rgba(24, 57, 65, 0.84), rgba(8, 26, 33, 0.68));
+  backdrop-filter: blur(14px);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -676,17 +679,61 @@ video {
   pointer-events: none;
 }
 
-.media-loading__spinner {
+.video-loading--skeleton {
+  opacity: 1;
+}
+
+.video-loading--buffering {
+  background:
+    radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.1), transparent 38%),
+    linear-gradient(180deg, rgba(9, 28, 35, 0.32), rgba(6, 18, 22, 0.72));
+}
+
+.video-loading__shimmer {
+  position: absolute;
+  inset: -40%;
+  background: linear-gradient(
+    110deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.16) 50%,
+    transparent 62%
+  );
+  transform: translateX(-38%);
+  animation: video-loading-shimmer 1.8s ease-in-out infinite;
+}
+
+.video-loading__content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  gap: 0.62rem;
+}
+
+.video-loading__brand {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  opacity: 0.72;
+}
+
+.video-loading__spinner {
   width: 1.5rem;
   aspect-ratio: 1;
   margin-inline: auto;
   border: 2px solid rgba(255, 255, 255, 0.28);
   border-top-color: #fff;
   border-radius: 50%;
-  animation: media-loading-spin 0.8s linear infinite;
+  animation: video-loading-spin 0.8s linear infinite;
 }
 
-@keyframes media-loading-spin {
+@keyframes video-loading-shimmer {
+  50%,
+  100% {
+    transform: translateX(38%);
+  }
+}
+
+@keyframes video-loading-spin {
   to {
     transform: rotate(360deg);
   }
@@ -1530,7 +1577,8 @@ video {
     transition: none;
   }
 
-  .media-loading__spinner {
+  .video-loading__shimmer,
+  .video-loading__spinner {
     animation: none;
   }
 }

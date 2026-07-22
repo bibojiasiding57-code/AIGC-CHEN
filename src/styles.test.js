@@ -83,17 +83,23 @@ describe("Contact privacy layout", () => {
 });
 
 describe("Video loading feedback", () => {
-  it("keeps the loading overlay pointer-transparent", () => {
+  it("renders a pointer-transparent glass skeleton without covering controls", () => {
     expect(stylesheet).toMatch(
-      /\.media-loading\s*\{[^}]*position:\s*absolute;[^}]*pointer-events:\s*none;/s,
+      /\.video-loading\s*\{[^}]*position:\s*absolute;[^}]*backdrop-filter:\s*blur\([^)]*\);[^}]*pointer-events:\s*none;/s,
     );
-    expect(stylesheet).toContain(".media-loading__spinner");
+    expect(stylesheet).toContain(".video-loading--skeleton");
+    expect(stylesheet).toContain(".video-loading--buffering");
+    expect(stylesheet).toContain(".video-loading__shimmer");
+    expect(stylesheet).toContain(".video-loading__spinner");
     expect(stylesheet).toContain(".works-dialog__media");
+    expect(stylesheet).toMatch(
+      /\.media-card__play\s*\{[^}]*z-index:\s*2;/s,
+    );
   });
 
-  it("disables spinner animation when reduced motion is requested", () => {
+  it("disables shimmer and spinner animation when reduced motion is requested", () => {
     expect(stylesheet).toMatch(
-      /@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.media-loading__spinner\s*\{[^}]*animation:\s*none;/,
+      /@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.video-loading__shimmer,[\s\S]*?\.video-loading__spinner\s*\{[^}]*animation:\s*none;/,
     );
   });
 });
