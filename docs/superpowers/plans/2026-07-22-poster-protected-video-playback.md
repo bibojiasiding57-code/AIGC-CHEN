@@ -24,6 +24,7 @@
 **Files:**
 - Create: `public/media/works/posters/*.webp`
 - Modify: `src/data/portfolio.js`
+- Modify: `.vercelignore`
 - Test: `src/data/portfolio.test.js`
 
 **Interfaces:**
@@ -64,12 +65,18 @@ Add to each project object:
 poster: "/media/works/posters/avatr-ad.webp",
 ```
 
+Replace the broad Vercel exclusion with a file-only rule so posters remain deployable:
+
+```text
+public/media/works/*.mp4
+```
+
 - [ ] **Step 5: Verify GREEN and commit**
 
 Run the focused test; expect all portfolio tests to pass. Then:
 
 ```bash
-git add public/media/works/posters src/data/portfolio.js src/data/portfolio.test.js
+git add .vercelignore public/media/works/posters src/data/portfolio.js src/data/portfolio.test.js
 git commit -m "feat: add poster protection for project videos"
 ```
 
@@ -363,7 +370,7 @@ Expected: remote main advances to local HEAD.
 
 - [ ] **Step 5: Dry-run and deploy Vercel**
 
-Run `pnpm dlx vercel@latest deploy --dry --format=json`; confirm `.worktrees` and `public/media/works` are excluded. Then run `pnpm dlx vercel@latest --prod --yes`.
+Run `pnpm dlx vercel@latest deploy --dry --format=json`; confirm `.worktrees` and all `public/media/works/*.mp4` files are excluded while all 14 `public/media/works/posters/*.webp` files are included. Then run `pnpm dlx vercel@latest --prod --yes`.
 
 Expected: production reaches `READY` and aliases `https://aigcchen.cn`.
 
