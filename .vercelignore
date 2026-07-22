@@ -3,5 +3,6 @@ node_modules
 .pnpm-store
 .superpowers
 .agents
+.worktrees
 docs
 public/media/works
