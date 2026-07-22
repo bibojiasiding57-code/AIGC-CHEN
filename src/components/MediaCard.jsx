@@ -1,54 +1,53 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, Play } from "@phosphor-icons/react";
-import useAdaptiveVideoSource from "../hooks/useAdaptiveVideoSource";
-import VideoLoadingOverlay from "./VideoLoadingOverlay";
+import {
+  useVideoBandwidthController,
+  useVideoBandwidthRegistration,
+} from "../video/VideoBandwidthContext";
 
 export default function MediaCard({ project, featured = false, onOpen }) {
   const mediaRef = useRef(null);
   const [failed, setFailed] = useState(false);
   const [hasFrame, setHasFrame] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
-  const { containerRef, activeSource, requestSource } = useAdaptiveVideoSource({
-    source: project.src,
+  const ownerId = `preview:${project.id}`;
+  const bandwidth = useVideoBandwidthController();
+  const containerRef = useRef(null);
+  useVideoBandwidthRegistration({
+    id: ownerId,
+    group: "preview",
+    src: project.type === "video" ? project.src : undefined,
     mediaRef,
-    enabled: project.type === "video",
   });
+  const isActive = bandwidth.ownership.mode === "preview" && bandwidth.ownership.ownerId === ownerId;
 
   const playPreview = () => {
     if (project.type === "video") {
-      const media = mediaRef.current;
-      if (!media) return;
-      requestSource();
-      if (media.readyState < 3) setIsBuffering(true);
-      media.play().catch(() => setIsBuffering(false));
+      setHasFrame(false);
+      setIsBuffering(true);
+      bandwidth.activatePreview(ownerId);
     }
   };
 
   const resetPreview = () => {
     if (project.type === "video") {
-      const media = mediaRef.current;
-      if (!media) return;
-      media.pause();
-      media.currentTime = 0;
+      bandwidth.releasePreview(ownerId);
+      setHasFrame(false);
+      setIsBuffering(false);
     }
   };
 
   useEffect(() => () => resetPreview(), [project.src]);
 
   useEffect(() => {
-    const pauseForModal = () => resetPreview();
-    window.addEventListener("aigcchen:modal-video-open", pauseForModal);
-    return () => window.removeEventListener("aigcchen:modal-video-open", pauseForModal);
-  }, [project.src]);
-
-  useEffect(() => {
-    if (activeSource) return;
+    if (isActive) return;
     setHasFrame(false);
     setIsBuffering(false);
-  }, [activeSource]);
+  }, [isActive]);
 
   const openProject = () => {
     resetPreview();
+    if (onOpen) bandwidth.activateModal(`modal:${project.id}`);
     onOpen?.(project);
   };
 
@@ -78,7 +77,6 @@ export default function MediaCard({ project, featured = false, onOpen }) {
         ) : project.type === "video" ? (
           <video
             ref={mediaRef}
-            src={activeSource}
             poster={project.poster}
             muted
             loop
@@ -129,11 +127,6 @@ export default function MediaCard({ project, featured = false, onOpen }) {
             alt=""
             aria-hidden="true"
             data-visible={String(!hasFrame || isBuffering)}
-          />
-        ) : null}
-        {!failed ? (
-          <VideoLoadingOverlay
-            phase={!activeSource ? "hidden" : isBuffering ? "buffering" : !hasFrame ? "skeleton" : "hidden"}
           />
         ) : null}
         {project.type === "video" ? (

@@ -18,6 +18,10 @@ import SectionHeading from "./components/SectionHeading";
 import SplitText from "./components/SplitText";
 import TargetCursor from "./components/TargetCursor";
 import WorksVideoDialog from "./components/WorksVideoDialog";
+import {
+  VideoBandwidthProvider,
+  useVideoBandwidthRegistration,
+} from "./video/VideoBandwidthContext";
 import { characters, contact, navItems, projects, resolveVideoSrc } from "./data/portfolio";
 import useLaserFlowEnabled from "./hooks/useLaserFlowEnabled";
 import { getCopyFeedback, getSectionId } from "./utils/ui";
@@ -30,7 +34,7 @@ const moods = [
   { id: "pulse", label: "脉冲", caption: "Pulse / Electric" },
 ];
 
-export default function App() {
+function AppContent() {
   const [mood, setMood] = useState("immersive");
   const [characterQuery, setCharacterQuery] = useState("");
   const [copied, setCopied] = useState(false);
@@ -42,6 +46,13 @@ export default function App() {
   const pendingPointerRef = useRef(null);
   const characterTrackRef = useRef(null);
   const characterSectionRef = useRef(null);
+  const heroVideoRef = useRef(null);
+  useVideoBandwidthRegistration({
+    id: "hero",
+    group: "idle",
+    src: resolveVideoSrc("/media/works/japanese-style-test.mp4"),
+    mediaRef: heroVideoRef,
+  });
 
   const visibleCharacters = characters.filter((character) => {
     const haystack = `${character.name} ${character.title} ${character.discipline}`.toLowerCase();
@@ -155,8 +166,9 @@ export default function App() {
     <main className="site-shell">
       <section className="hero" aria-labelledby="hero-title">
         <video
+          ref={heroVideoRef}
           className="hero__video"
-          src={resolveVideoSrc("/media/works/japanese-style-test.mp4")}
+          poster="/media/works/posters/japanese-style-test.webp"
           autoPlay
           muted
           loop
@@ -376,6 +388,7 @@ export default function App() {
             <ExperienceVideo
               className="experience-media experience-media--video"
               src={resolveVideoSrc("/media/works/test-success.mp4")}
+              poster="/media/works/posters/test-success.webp"
               ariaLabel="测试成功动态影像"
             />
           </div>
@@ -428,5 +441,13 @@ export default function App() {
       </section>
     </main>
     </ClickSpark>
+  );
+}
+
+export default function App() {
+  return (
+    <VideoBandwidthProvider>
+      <AppContent />
+    </VideoBandwidthProvider>
   );
 }

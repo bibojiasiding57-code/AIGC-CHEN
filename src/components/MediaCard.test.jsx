@@ -1,10 +1,11 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import MediaCard from "./MediaCard";
+import { VideoBandwidthProvider } from "../video/VideoBandwidthContext";
 
 const project = {
   id: "avatr-ad",
-  title: "啊维塔广告",
+  title: "Avatr Ad",
   category: "AI FILM / AUTOMOTIVE",
   year: "2026",
   type: "video",
@@ -13,131 +14,80 @@ const project = {
   tone: "amber",
 };
 
-describe("MediaCard", () => {
+const secondProject = {
+  ...project,
+  id: "pv",
+  title: "PV",
+  src: "/media/works/pv.mp4",
+  poster: "/media/works/posters/pv.webp",
+};
+
+function renderCards(children) {
+  return render(<VideoBandwidthProvider>{children}</VideoBandwidthProvider>);
+}
+
+describe("MediaCard bandwidth ownership", () => {
   let play;
   let pause;
-  let observers;
-  let observe;
-  let disconnect;
+  let load;
 
   beforeEach(() => {
     play = vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue();
     pause = vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
-    vi.spyOn(HTMLMediaElement.prototype, "load").mockImplementation(() => {});
-    observers = [];
-    observe = vi.fn();
-    disconnect = vi.fn();
-    Object.defineProperty(navigator, "connection", {
-      configurable: true,
-      value: { saveData: false, effectiveType: "4g" },
-    });
-    globalThis.IntersectionObserver = vi.fn(function IntersectionObserver(callback, options = {}) {
-      this.callback = callback;
-      this.options = options;
-      this.observe = observe;
-      this.disconnect = disconnect;
-      observers.push(this);
-    });
+    load = vi.spyOn(HTMLMediaElement.prototype, "load").mockImplementation(() => {});
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
+  afterEach(() => vi.restoreAllMocks());
 
-  it("previews on hover and pauses and rewinds on leave", () => {
-    const { container } = render(<MediaCard project={project} />);
-    const visual = container.querySelector(".media-card__visual");
-    const video = screen.getByLabelText("啊维塔广告 视频预览");
-
-    Object.defineProperty(video, "currentTime", { value: 8, writable: true });
-    fireEvent.pointerEnter(visual);
-    expect(play).toHaveBeenCalledTimes(1);
-
-    fireEvent.pointerLeave(visual);
-    expect(pause).toHaveBeenCalled();
-    expect(video.currentTime).toBe(0);
-  });
-
-  it("tracks a nearby card without prewarming its video", () => {
-    const { container } = render(<MediaCard project={project} />);
-    const video = container.querySelector("video");
-
-    expect(observers).toHaveLength(2);
-    expect(observers[0].options).toEqual({ rootMargin: "200px 0px" });
-    expect(observe).toHaveBeenCalledWith(container.querySelector(".media-card__visual"));
-    expect(video).not.toHaveAttribute("src");
-    act(() => observers[0].callback([{ isIntersecting: true }]));
-
-    expect(video).not.toHaveAttribute("src");
-    expect(video).toHaveAttribute("preload", "metadata");
-  });
-
-  it("keeps its poster visible until a playable frame exists", () => {
-    const { container } = render(<MediaCard project={project} />);
+  it("keeps the video physically disconnected until hover intent", () => {
+    const { container } = renderCards(<MediaCard project={project} />);
     const visual = container.querySelector(".media-card__visual");
     const video = container.querySelector("video");
-    const poster = container.querySelector(".media-card__poster");
 
     expect(video).not.toHaveAttribute("src");
-    expect(poster).toHaveAttribute("src", project.poster);
-    expect(poster).toHaveAttribute("data-visible", "true");
-
     fireEvent.pointerEnter(visual);
     expect(video).toHaveAttribute("src", project.src);
-    fireEvent.canPlay(video);
-    expect(poster).toHaveAttribute("data-visible", "false");
+    expect(play).toHaveBeenCalled();
 
-    fireEvent.waiting(video);
+    fireEvent.pointerLeave(visual);
+    expect(video).not.toHaveAttribute("src");
+    expect(pause).toHaveBeenCalled();
+    expect(load).toHaveBeenCalled();
+  });
+
+  it("allows only the most recently hovered card to retain a source", () => {
+    const { container } = renderCards(
+      <>
+        <MediaCard project={project} />
+        <MediaCard project={secondProject} />
+      </>,
+    );
+    const visuals = container.querySelectorAll(".media-card__visual");
+    const videos = container.querySelectorAll("video");
+
+    fireEvent.pointerEnter(visuals[0]);
+    expect(videos[0]).toHaveAttribute("src", project.src);
+    fireEvent.pointerEnter(visuals[1]);
+    expect(videos[0]).not.toHaveAttribute("src");
+    expect(videos[1]).toHaveAttribute("src", secondProject.src);
+  });
+
+  it("uses the poster while disconnected and removes custom loading overlays", () => {
+    const { container } = renderCards(<MediaCard project={project} />);
+    const poster = container.querySelector(".media-card__poster");
+
+    expect(poster).toHaveAttribute("src", project.poster);
     expect(poster).toHaveAttribute("data-visible", "true");
+    expect(container.querySelector(".video-loading")).not.toBeInTheDocument();
   });
 
-  it("shows Loading only after playback intent and hides it on the first frame", () => {
-    const { container } = render(<MediaCard project={project} />);
-    const video = container.querySelector("video");
-    const visual = container.querySelector(".media-card__visual");
-
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
-    fireEvent.pointerEnter(visual);
-    expect(screen.getByRole("status")).toBeInTheDocument();
-    fireEvent.loadedData(video);
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
-  });
-
-  it("shows buffering feedback until the preview can play", () => {
-    const { container } = render(<MediaCard project={project} />);
-    const video = container.querySelector("video");
-
-    fireEvent.pointerEnter(container.querySelector(".media-card__visual"));
-    fireEvent.waiting(video);
-    expect(screen.getByRole("status", { name: "视频缓冲中" })).toBeInTheDocument();
-
-    fireEvent.canPlay(video);
-    expect(screen.queryByRole("status", { name: "视频缓冲中" })).not.toBeInTheDocument();
-  });
-
-  it("pauses its preview when the modal claims video bandwidth", () => {
-    const { container } = render(<MediaCard project={project} />);
-    fireEvent.pointerEnter(container.querySelector(".media-card__visual"));
-    pause.mockClear();
-
-    window.dispatchEvent(new CustomEvent("aigcchen:modal-video-open"));
-
-    expect(pause).toHaveBeenCalledTimes(1);
-  });
-
-  it("opens the project on visual double click", () => {
+  it("opens the project from double click and the play button", () => {
     const onOpen = vi.fn();
-    const { container } = render(<MediaCard project={project} onOpen={onOpen} />);
+    const { container } = renderCards(<MediaCard project={project} onOpen={onOpen} />);
 
     fireEvent.doubleClick(container.querySelector(".media-card__visual"));
     expect(onOpen).toHaveBeenCalledWith(project);
-  });
-
-  it("provides a clickable large-view button above the video", () => {
-    const onOpen = vi.fn();
-    render(<MediaCard project={project} onOpen={onOpen} />);
-
-    fireEvent.click(screen.getByRole("button", { name: "大尺寸播放 啊维塔广告" }));
-    expect(onOpen).toHaveBeenCalledWith(project);
+    fireEvent.click(container.querySelector(".media-card__play"));
+    expect(onOpen).toHaveBeenCalledTimes(2);
   });
 });

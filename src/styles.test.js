@@ -93,23 +93,4 @@ describe("Video loading feedback", () => {
     expect(stylesheet).toMatch(/\.media-card__play\s*\{[^}]*z-index:\s*2;/s);
   });
 
-  it("renders a pointer-transparent glass skeleton without covering controls", () => {
-    expect(stylesheet).toMatch(
-      /\.video-loading\s*\{[^}]*position:\s*absolute;[^}]*backdrop-filter:\s*blur\([^)]*\);[^}]*pointer-events:\s*none;/s,
-    );
-    expect(stylesheet).toContain(".video-loading--skeleton");
-    expect(stylesheet).toContain(".video-loading--buffering");
-    expect(stylesheet).toContain(".video-loading__shimmer");
-    expect(stylesheet).toContain(".video-loading__spinner");
-    expect(stylesheet).toContain(".works-dialog__media");
-    expect(stylesheet).toMatch(
-      /\.media-card__play\s*\{[^}]*z-index:\s*2;/s,
-    );
-  });
-
-  it("disables shimmer and spinner animation when reduced motion is requested", () => {
-    expect(stylesheet).toMatch(
-      /@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.video-loading__shimmer,[\s\S]*?\.video-loading__spinner\s*\{[^}]*animation:\s*none;/,
-    );
-  });
 });

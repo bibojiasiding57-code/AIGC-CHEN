@@ -1,56 +1,48 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ExperienceVideo from "./ExperienceVideo";
+import {
+  VideoBandwidthProvider,
+  useVideoBandwidthController,
+} from "../video/VideoBandwidthContext";
+
+function PreviewControls() {
+  const bandwidth = useVideoBandwidthController();
+  return (
+    <>
+      <button onClick={() => bandwidth.activatePreview("card")}>preview</button>
+      <button onClick={() => bandwidth.releasePreview("card")}>leave</button>
+    </>
+  );
+}
 
 describe("ExperienceVideo", () => {
-  let play;
-
   beforeEach(() => {
-    play = vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue();
+    vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue();
+    vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+    vi.spyOn(HTMLMediaElement.prototype, "load").mockImplementation(() => {});
     Object.defineProperty(document, "hidden", { configurable: true, value: false });
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
+  afterEach(() => vi.restoreAllMocks());
 
-  it("keeps a permanent muted inline looping source", () => {
+  it("loops in idle, disconnects during preview, and restores after preview release", () => {
     render(
-      <ExperienceVideo
-        src="/media/works/test-success.mp4"
-        className="experience-media experience-media--video"
-        ariaLabel="测试成功动态影像"
-      />,
+      <VideoBandwidthProvider>
+        <ExperienceVideo id="experience" src="/media/works/test-success.mp4" ariaLabel="Experience" />
+        <PreviewControls />
+      </VideoBandwidthProvider>,
     );
 
-    const video = screen.getByLabelText("测试成功动态影像");
+    const video = screen.getByLabelText("Experience");
     expect(video).toHaveAttribute("src", "/media/works/test-success.mp4");
     expect(video).toHaveAttribute("autoplay");
     expect(video).toHaveAttribute("loop");
     expect(video).toHaveAttribute("playsinline");
-    expect(video).toHaveAttribute("preload", "metadata");
-    expect(video.muted).toBe(true);
-    expect(play).toHaveBeenCalledTimes(1);
-  });
 
-  it("retries muted playback on canplay and visibility recovery", () => {
-    render(
-      <ExperienceVideo
-        src="/media/works/test-success.mp4"
-        ariaLabel="测试成功动态影像"
-      />,
-    );
-
-    const video = screen.getByLabelText("测试成功动态影像");
-    fireEvent.canPlay(video);
-    expect(play).toHaveBeenCalledTimes(2);
-
-    Object.defineProperty(document, "hidden", { configurable: true, value: true });
-    fireEvent(document, new Event("visibilitychange"));
-    expect(play).toHaveBeenCalledTimes(2);
-
-    Object.defineProperty(document, "hidden", { configurable: true, value: false });
-    fireEvent(document, new Event("visibilitychange"));
-    expect(play).toHaveBeenCalledTimes(3);
+    fireEvent.click(screen.getByRole("button", { name: "preview" }));
+    expect(video).not.toHaveAttribute("src");
+    fireEvent.click(screen.getByRole("button", { name: "leave" }));
+    expect(video).toHaveAttribute("src", "/media/works/test-success.mp4");
   });
 });

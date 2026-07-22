@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useRef } from "react";
 import RevealMedia from "./RevealMedia";
+import { useVideoBandwidthRegistration } from "../video/VideoBandwidthContext";
 
-export default function ExperienceVideo({ src, className = "", ariaLabel }) {
+export default function ExperienceVideo({ id = "experience", src, poster, className = "", ariaLabel }) {
   const videoRef = useRef(null);
+  useVideoBandwidthRegistration({ id, group: "idle", src, mediaRef: videoRef });
 
   const ensurePlayback = useCallback(() => {
     const video = videoRef.current;
-    if (!video || document.hidden) return;
+    if (!video || document.hidden || !video.hasAttribute("src")) return;
     video.muted = true;
     video.play()?.catch?.(() => {});
   }, []);
@@ -22,12 +24,12 @@ export default function ExperienceVideo({ src, className = "", ariaLabel }) {
       as="video"
       mediaRef={videoRef}
       className={className}
-      src={src}
       muted
       loop
       playsInline
       autoPlay
       preload="metadata"
+      poster={poster}
       onCanPlay={ensurePlayback}
       aria-label={ariaLabel}
     />

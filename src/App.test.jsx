@@ -96,7 +96,7 @@ describe("AIGC-CHEN portfolio", () => {
     const video = screen.getByLabelText("AIGC-CHEN 日系风格影像");
 
     expect(video).toHaveAttribute("src", "/media/works/japanese-style-test.mp4");
-    expect(video).not.toHaveAttribute("poster");
+    expect(video).toHaveAttribute("poster", "/media/works/posters/japanese-style-test.webp");
     expect(screen.queryByRole("link", { name: "SCROLL" })).not.toBeInTheDocument();
   });
 
@@ -105,7 +105,7 @@ describe("AIGC-CHEN portfolio", () => {
 
     const video = screen.getByLabelText("测试成功动态影像");
     expect(video).toHaveAttribute("src", "/media/works/test-success.mp4");
-    expect(video).not.toHaveAttribute("poster");
+    expect(video).toHaveAttribute("poster", "/media/works/posters/test-success.webp");
     expect(video).toHaveAttribute("preload", "metadata");
 
     expect(screen.getByAltText("红黑时尚编辑视觉")).toHaveAttribute(
