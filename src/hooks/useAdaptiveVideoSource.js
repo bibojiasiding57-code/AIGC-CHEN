@@ -1,12 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const isConstrainedConnection = () => {
-  const connection = typeof navigator === "undefined" ? undefined : navigator.connection;
-  return Boolean(
-    connection?.saveData || connection?.effectiveType === "2g" || connection?.effectiveType === "slow-2g",
-  );
-};
-
 export default function useAdaptiveVideoSource({
   source,
   mediaRef,
@@ -64,18 +57,15 @@ export default function useAdaptiveVideoSource({
     if (typeof IntersectionObserver === "undefined") {
       setIsNearViewport(true);
       setIsInViewport(true);
-      requestSource();
       return () => clearReleaseTimer();
     }
 
-    const allowAutomaticPrewarm = !isConstrainedConnection();
     const nearObserver = new IntersectionObserver(
       (entries) => {
         const isNear = entries.some((entry) => entry.isIntersecting);
         setIsNearViewport(isNear);
         if (isNear) {
           clearReleaseTimer();
-          if (allowAutomaticPrewarm) requestSource();
           return;
         }
         clearReleaseTimer();
@@ -98,7 +88,7 @@ export default function useAdaptiveVideoSource({
       activeObserver.disconnect();
       clearReleaseTimer();
     };
-  }, [clearReleaseTimer, enabled, mediaRef, releaseDelay, releaseSource, requestSource]);
+  }, [clearReleaseTimer, enabled, mediaRef, releaseDelay, releaseSource]);
 
   return {
     containerRef,

@@ -46,7 +46,7 @@ describe("useAdaptiveVideoSource", () => {
     vi.restoreAllMocks();
   });
 
-  it("prewarms the source 200px before the card enters the viewport", () => {
+  it("tracks proximity 200px early without attaching the source", () => {
     const { getByTestId } = render(<Probe />);
     expect(observers).toHaveLength(2);
     expect(observers[0].options).toEqual({ rootMargin: "200px 0px" });
@@ -54,14 +54,15 @@ describe("useAdaptiveVideoSource", () => {
 
     act(() => observers[0].callback([{ isIntersecting: true }]));
 
-    expect(getByTestId("video")).toHaveAttribute("src", SOURCE);
+    expect(getByTestId("video")).not.toHaveAttribute("src");
     expect(getByTestId("near")).toHaveTextContent("true");
-    expect(load).toHaveBeenCalled();
+    expect(load).not.toHaveBeenCalled();
   });
 
   it("pauses on viewport exit and releases the source after 20 seconds away", () => {
     vi.useFakeTimers();
-    const { getByTestId } = render(<Probe />);
+    const { getByRole, getByTestId } = render(<Probe />);
+    fireEvent.click(getByRole("button", { name: "request" }));
     act(() => observers[0].callback([{ isIntersecting: true }]));
     act(() => observers[1].callback([{ isIntersecting: true }]));
     act(() => observers[1].callback([{ isIntersecting: false }]));
@@ -76,7 +77,8 @@ describe("useAdaptiveVideoSource", () => {
 
   it("cancels delayed release when the card returns", () => {
     vi.useFakeTimers();
-    const { getByTestId } = render(<Probe />);
+    const { getByRole, getByTestId } = render(<Probe />);
+    fireEvent.click(getByRole("button", { name: "request" }));
     act(() => observers[0].callback([{ isIntersecting: true }]));
     act(() => observers[0].callback([{ isIntersecting: false }]));
     act(() => vi.advanceTimersByTime(10_000));
@@ -85,11 +87,7 @@ describe("useAdaptiveVideoSource", () => {
     expect(getByTestId("video")).toHaveAttribute("src", SOURCE);
   });
 
-  it("skips automatic prewarming on Save-Data but loads on user request", () => {
-    Object.defineProperty(navigator, "connection", {
-      configurable: true,
-      value: { saveData: true, effectiveType: "4g" },
-    });
+  it("loads only on an explicit user request", () => {
     const { getByRole, getByTestId } = render(<Probe />);
     act(() => observers[0].callback([{ isIntersecting: true }]));
     expect(getByTestId("video")).not.toHaveAttribute("src");

@@ -9,6 +9,7 @@ const project = {
   year: "2026",
   type: "video",
   src: "/media/works/avatr-ad.mp4",
+  poster: "/media/works/posters/avatr-ad.webp",
   tone: "amber",
 };
 
@@ -57,7 +58,7 @@ describe("MediaCard", () => {
     expect(video.currentTime).toBe(0);
   });
 
-  it("prewarms video near the viewport", () => {
+  it("tracks a nearby card without prewarming its video", () => {
     const { container } = render(<MediaCard project={project} />);
     const video = container.querySelector("video");
 
@@ -67,25 +68,46 @@ describe("MediaCard", () => {
     expect(video).not.toHaveAttribute("src");
     act(() => observers[0].callback([{ isIntersecting: true }]));
 
-    expect(video).toHaveAttribute("src", project.src);
+    expect(video).not.toHaveAttribute("src");
     expect(video).toHaveAttribute("preload", "metadata");
   });
 
-  it("shows a skeleton until the first frame is available", () => {
+  it("keeps its poster visible until a playable frame exists", () => {
+    const { container } = render(<MediaCard project={project} />);
+    const visual = container.querySelector(".media-card__visual");
+    const video = container.querySelector("video");
+    const poster = container.querySelector(".media-card__poster");
+
+    expect(video).not.toHaveAttribute("src");
+    expect(poster).toHaveAttribute("src", project.poster);
+    expect(poster).toHaveAttribute("data-visible", "true");
+
+    fireEvent.pointerEnter(visual);
+    expect(video).toHaveAttribute("src", project.src);
+    fireEvent.canPlay(video);
+    expect(poster).toHaveAttribute("data-visible", "false");
+
+    fireEvent.waiting(video);
+    expect(poster).toHaveAttribute("data-visible", "true");
+  });
+
+  it("shows Loading only after playback intent and hides it on the first frame", () => {
     const { container } = render(<MediaCard project={project} />);
     const video = container.querySelector("video");
+    const visual = container.querySelector(".media-card__visual");
 
-    expect(screen.getByRole("status", { name: "视频加载中" })).toHaveClass(
-      "video-loading--skeleton",
-    );
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    fireEvent.pointerEnter(visual);
+    expect(screen.getByRole("status")).toBeInTheDocument();
     fireEvent.loadedData(video);
-    expect(screen.queryByRole("status", { name: "视频加载中" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
   it("shows buffering feedback until the preview can play", () => {
     const { container } = render(<MediaCard project={project} />);
     const video = container.querySelector("video");
 
+    fireEvent.pointerEnter(container.querySelector(".media-card__visual"));
     fireEvent.waiting(video);
     expect(screen.getByRole("status", { name: "视频缓冲中" })).toBeInTheDocument();
 

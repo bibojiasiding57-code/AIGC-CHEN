@@ -79,9 +79,18 @@ export default function MediaCard({ project, featured = false, onOpen }) {
             playsInline
             preload="metadata"
             aria-label={`${project.title} 视频预览`}
-            onLoadStart={() => setIsBuffering(true)}
-            onWaiting={() => setIsBuffering(true)}
-            onStalled={() => setIsBuffering(true)}
+            onLoadStart={() => {
+              setHasFrame(false);
+              setIsBuffering(true);
+            }}
+            onWaiting={() => {
+              setHasFrame(false);
+              setIsBuffering(true);
+            }}
+            onStalled={() => {
+              setHasFrame(false);
+              setIsBuffering(true);
+            }}
             onLoadedData={() => {
               setHasFrame(true);
               setIsBuffering(false);
@@ -107,8 +116,19 @@ export default function MediaCard({ project, featured = false, onOpen }) {
             onError={() => setFailed(true)}
           />
         )}
+        {project.type === "video" && !failed ? (
+          <img
+            className="media-card__poster"
+            src={project.poster}
+            alt=""
+            aria-hidden="true"
+            data-visible={String(!hasFrame || isBuffering)}
+          />
+        ) : null}
         {!failed ? (
-          <VideoLoadingOverlay phase={isBuffering ? "buffering" : !hasFrame ? "skeleton" : "hidden"} />
+          <VideoLoadingOverlay
+            phase={!activeSource ? "hidden" : isBuffering ? "buffering" : !hasFrame ? "skeleton" : "hidden"}
+          />
         ) : null}
         {project.type === "video" ? (
           <button
