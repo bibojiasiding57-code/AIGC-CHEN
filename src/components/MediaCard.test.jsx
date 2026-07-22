@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import MediaCard from "./MediaCard";
 
@@ -15,19 +15,27 @@ const project = {
 describe("MediaCard", () => {
   let play;
   let pause;
-  let intersectionCallback;
+  let observers;
   let observe;
   let disconnect;
 
   beforeEach(() => {
     play = vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue();
     pause = vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+    vi.spyOn(HTMLMediaElement.prototype, "load").mockImplementation(() => {});
+    observers = [];
     observe = vi.fn();
     disconnect = vi.fn();
-    globalThis.IntersectionObserver = vi.fn(function IntersectionObserver(callback) {
-      intersectionCallback = callback;
+    Object.defineProperty(navigator, "connection", {
+      configurable: true,
+      value: { saveData: false, effectiveType: "4g" },
+    });
+    globalThis.IntersectionObserver = vi.fn(function IntersectionObserver(callback, options = {}) {
+      this.callback = callback;
+      this.options = options;
       this.observe = observe;
       this.disconnect = disconnect;
+      observers.push(this);
     });
   });
 
@@ -50,16 +58,28 @@ describe("MediaCard", () => {
   });
 
   it("prewarms video near the viewport", () => {
-    const load = vi.spyOn(HTMLMediaElement.prototype, "load").mockImplementation(() => {});
     const { container } = render(<MediaCard project={project} />);
     const video = container.querySelector("video");
 
+    expect(observers).toHaveLength(2);
+    expect(observers[0].options).toEqual({ rootMargin: "200px 0px" });
     expect(observe).toHaveBeenCalledWith(container.querySelector(".media-card__visual"));
-    intersectionCallback([{ isIntersecting: true }]);
+    expect(video).not.toHaveAttribute("src");
+    act(() => observers[0].callback([{ isIntersecting: true }]));
 
-    expect(load).toHaveBeenCalledTimes(1);
+    expect(video).toHaveAttribute("src", project.src);
     expect(video).toHaveAttribute("preload", "metadata");
-    expect(disconnect).toHaveBeenCalled();
+  });
+
+  it("shows a skeleton until the first frame is available", () => {
+    const { container } = render(<MediaCard project={project} />);
+    const video = container.querySelector("video");
+
+    expect(screen.getByRole("status", { name: "视频加载中" })).toHaveClass(
+      "video-loading--skeleton",
+    );
+    fireEvent.loadedData(video);
+    expect(screen.queryByRole("status", { name: "视频加载中" })).not.toBeInTheDocument();
   });
 
   it("shows buffering feedback until the preview can play", () => {
