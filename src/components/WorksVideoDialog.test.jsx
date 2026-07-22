@@ -15,10 +15,12 @@ const project = {
 describe("WorksVideoDialog", () => {
   let play;
   let pause;
+  let load;
 
   beforeEach(() => {
     play = vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue();
     pause = vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+    load = vi.spyOn(HTMLMediaElement.prototype, "load").mockImplementation(() => {});
     HTMLDialogElement.prototype.showModal = vi.fn(function showModal() {
       this.open = true;
     });
@@ -41,7 +43,19 @@ describe("WorksVideoDialog", () => {
     expect(video).toHaveAttribute("src", project.src);
     expect(video).toHaveAttribute("controls");
     expect(video).toHaveAttribute("preload", "auto");
+    expect(video).toHaveAttribute("playsinline");
     expect(play).toHaveBeenCalled();
+  });
+
+  it("shows a skeleton until the first modal frame is available", () => {
+    render(<WorksVideoDialog project={project} onClose={vi.fn()} />);
+    const video = screen.getByLabelText(`${project.title} 大尺寸视频`);
+
+    expect(screen.getByRole("status", { name: "视频加载中" })).toHaveClass(
+      "video-loading--skeleton",
+    );
+    fireEvent.loadedData(video);
+    expect(screen.queryByRole("status", { name: "视频加载中" })).not.toBeInTheDocument();
   });
 
   it("shows buffering feedback until playback resumes", () => {
@@ -64,6 +78,8 @@ describe("WorksVideoDialog", () => {
     fireEvent.click(screen.getByRole("button", { name: "关闭大尺寸播放器" }));
     expect(pause).toHaveBeenCalled();
     expect(video.currentTime).toBe(0);
+    expect(video).not.toHaveAttribute("src");
+    expect(load).toHaveBeenCalled();
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 

@@ -1,16 +1,28 @@
 import { useEffect, useRef, useState } from "react";
 import { X } from "@phosphor-icons/react";
+import VideoLoadingOverlay from "./VideoLoadingOverlay";
 
 export default function WorksVideoDialog({ project, onClose }) {
   const dialogRef = useRef(null);
   const videoRef = useRef(null);
+  const [activeSource, setActiveSource] = useState(project?.src);
+  const [hasFrame, setHasFrame] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
 
   const stopVideo = () => {
     const video = videoRef.current;
     if (!video) return;
     video.pause();
-    video.currentTime = 0;
+    try {
+      video.currentTime = 0;
+    } catch {
+      // The selected video may not have loaded enough data to seek.
+    }
+    video.removeAttribute("src");
+    video.load();
+    setActiveSource(undefined);
+    setHasFrame(false);
+    setIsBuffering(false);
   };
 
   const requestClose = () => {
@@ -29,13 +41,22 @@ export default function WorksVideoDialog({ project, onClose }) {
 
     if (!project) {
       setIsBuffering(false);
+      setHasFrame(false);
+      setActiveSource(undefined);
       if (dialog.open) dialog.close();
       return undefined;
     }
 
-    setIsBuffering(true);
+    setActiveSource(project.src);
+    setHasFrame(false);
+    setIsBuffering(false);
     if (!dialog.open) dialog.showModal();
-    videoRef.current?.play().catch(() => setIsBuffering(false));
+    const video = videoRef.current;
+    if (video) {
+      video.setAttribute("src", project.src);
+      video.load();
+      video.play().catch(() => setIsBuffering(false));
+    }
 
     return stopVideo;
   }, [project]);
@@ -68,25 +89,35 @@ export default function WorksVideoDialog({ project, onClose }) {
             <video
             ref={videoRef}
             className="works-dialog__video"
-            src={project.src}
+              src={activeSource}
             controls
             autoPlay
             playsInline
             preload="auto"
-            onLoadStart={() => setIsBuffering(true)}
-            onWaiting={() => setIsBuffering(true)}
-            onStalled={() => setIsBuffering(true)}
-            onCanPlay={() => setIsBuffering(false)}
-            onPlaying={() => setIsBuffering(false)}
+              onLoadStart={() => {
+                setHasFrame(false);
+                setIsBuffering(false);
+              }}
+              onWaiting={() => setIsBuffering(true)}
+              onStalled={() => setIsBuffering(true)}
+              onLoadedData={() => {
+                setHasFrame(true);
+                setIsBuffering(false);
+              }}
+              onCanPlay={() => {
+                setHasFrame(true);
+                setIsBuffering(false);
+              }}
+              onPlaying={() => {
+                setHasFrame(true);
+                setIsBuffering(false);
+              }}
             onError={() => setIsBuffering(false)}
             aria-label={`${project.title} 大尺寸视频`}
             />
-            {isBuffering ? (
-              <span className="media-loading" role="status" aria-label="视频缓冲中">
-                <span className="media-loading__spinner" aria-hidden="true" />
-                <span>视频缓冲中</span>
-              </span>
-            ) : null}
+            <VideoLoadingOverlay
+              phase={isBuffering ? "buffering" : !hasFrame ? "skeleton" : "hidden"}
+            />
           </div>
         </div>
       ) : null}
