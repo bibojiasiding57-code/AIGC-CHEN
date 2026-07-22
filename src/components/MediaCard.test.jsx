@@ -115,6 +115,16 @@ describe("MediaCard", () => {
     expect(screen.queryByRole("status", { name: "视频缓冲中" })).not.toBeInTheDocument();
   });
 
+  it("pauses its preview when the modal claims video bandwidth", () => {
+    const { container } = render(<MediaCard project={project} />);
+    fireEvent.pointerEnter(container.querySelector(".media-card__visual"));
+    pause.mockClear();
+
+    window.dispatchEvent(new CustomEvent("aigcchen:modal-video-open"));
+
+    expect(pause).toHaveBeenCalledTimes(1);
+  });
+
   it("opens the project on visual double click", () => {
     const onOpen = vi.fn();
     const { container } = render(<MediaCard project={project} onOpen={onOpen} />);

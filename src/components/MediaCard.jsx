@@ -36,6 +36,12 @@ export default function MediaCard({ project, featured = false, onOpen }) {
   useEffect(() => () => resetPreview(), [project.src]);
 
   useEffect(() => {
+    const pauseForModal = () => resetPreview();
+    window.addEventListener("aigcchen:modal-video-open", pauseForModal);
+    return () => window.removeEventListener("aigcchen:modal-video-open", pauseForModal);
+  }, [project.src]);
+
+  useEffect(() => {
     if (activeSource) return;
     setHasFrame(false);
     setIsBuffering(false);

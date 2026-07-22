@@ -9,6 +9,7 @@ const project = {
   year: "2026",
   type: "video",
   src: "/media/works/avatr-ad.mp4",
+  poster: "/media/works/posters/avatr-ad.webp",
   tone: "amber",
 };
 
@@ -35,6 +36,8 @@ describe("WorksVideoDialog", () => {
   });
 
   it("opens the selected project in a large controlled player", () => {
+    const pausePreviews = vi.fn();
+    window.addEventListener("aigcchen:modal-video-open", pausePreviews, { once: true });
     render(<WorksVideoDialog project={project} onClose={vi.fn()} />);
 
     const dialog = screen.getByRole("dialog", { name: "啊维塔广告 大尺寸播放器" });
@@ -45,6 +48,20 @@ describe("WorksVideoDialog", () => {
     expect(video).toHaveAttribute("preload", "auto");
     expect(video).toHaveAttribute("playsinline");
     expect(play).toHaveBeenCalled();
+    expect(pausePreviews).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the modal poster visible before readiness and while buffering", () => {
+    const { container } = render(<WorksVideoDialog project={project} onClose={vi.fn()} />);
+    const video = screen.getByLabelText(`${project.title} 大尺寸视频`);
+    const poster = container.querySelector(".works-dialog__poster");
+
+    expect(poster).toHaveAttribute("src", project.poster);
+    expect(poster).toHaveAttribute("data-visible", "true");
+    fireEvent.canPlay(video);
+    expect(poster).toHaveAttribute("data-visible", "false");
+    fireEvent.waiting(video);
+    expect(poster).toHaveAttribute("data-visible", "true");
   });
 
   it("shows a skeleton until the first modal frame is available", () => {

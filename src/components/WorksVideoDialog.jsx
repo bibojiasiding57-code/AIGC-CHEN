@@ -47,6 +47,7 @@ export default function WorksVideoDialog({ project, onClose }) {
       return undefined;
     }
 
+    window.dispatchEvent(new CustomEvent("aigcchen:modal-video-open"));
     setActiveSource(project.src);
     setHasFrame(false);
     setIsBuffering(false);
@@ -98,8 +99,14 @@ export default function WorksVideoDialog({ project, onClose }) {
                 setHasFrame(false);
                 setIsBuffering(false);
               }}
-              onWaiting={() => setIsBuffering(true)}
-              onStalled={() => setIsBuffering(true)}
+              onWaiting={() => {
+                setHasFrame(false);
+                setIsBuffering(true);
+              }}
+              onStalled={() => {
+                setHasFrame(false);
+                setIsBuffering(true);
+              }}
               onLoadedData={() => {
                 setHasFrame(true);
                 setIsBuffering(false);
@@ -114,6 +121,13 @@ export default function WorksVideoDialog({ project, onClose }) {
               }}
             onError={() => setIsBuffering(false)}
             aria-label={`${project.title} 大尺寸视频`}
+            />
+            <img
+              className="works-dialog__poster"
+              src={project.poster}
+              alt=""
+              aria-hidden="true"
+              data-visible={String(!hasFrame || isBuffering)}
             />
             <VideoLoadingOverlay
               phase={isBuffering ? "buffering" : !hasFrame ? "skeleton" : "hidden"}
