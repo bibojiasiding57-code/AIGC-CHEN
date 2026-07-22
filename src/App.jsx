@@ -12,6 +12,7 @@ import {
 } from "@phosphor-icons/react";
 import MediaCard from "./components/MediaCard";
 import ClickSpark from "./components/ClickSpark";
+import ExperienceVideo from "./components/ExperienceVideo";
 import RevealMedia from "./components/RevealMedia";
 import SectionHeading from "./components/SectionHeading";
 import SplitText from "./components/SplitText";
@@ -372,16 +373,10 @@ export default function App() {
               alt="赛博角色编辑视觉"
               loading="lazy"
             />
-            <RevealMedia
-              as="video"
+            <ExperienceVideo
               className="experience-media experience-media--video"
               src={resolveVideoSrc("/media/works/test-success.mp4")}
-              muted
-              loop
-              playsInline
-              autoPlay
-              preload="metadata"
-              aria-label="测试成功动态影像"
+              ariaLabel="测试成功动态影像"
             />
           </div>
           <div className="experience-stage__copy">
