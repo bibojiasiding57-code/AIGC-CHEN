@@ -83,6 +83,16 @@ describe("Contact privacy layout", () => {
 });
 
 describe("Video loading feedback", () => {
+  it("covers videos with pointer-transparent posters without changing geometry", () => {
+    expect(stylesheet).toMatch(
+      /\.media-card__visual\s*>\s*\.media-card__poster,\s*\.works-dialog__media\s*>\s*\.works-dialog__poster\s*\{[^}]*position:\s*absolute;[^}]*inset:\s*0;[^}]*object-fit:\s*cover;[^}]*transition:\s*opacity\s+220ms\s+ease;[^}]*pointer-events:\s*none;/s,
+    );
+    expect(stylesheet).toMatch(
+      /\.media-card__visual\s*>\s*\.media-card__poster\[data-visible="false"\],\s*\.works-dialog__media\s*>\s*\.works-dialog__poster\[data-visible="false"\]\s*\{[^}]*opacity:\s*0;/s,
+    );
+    expect(stylesheet).toMatch(/\.media-card__play\s*\{[^}]*z-index:\s*2;/s);
+  });
+
   it("renders a pointer-transparent glass skeleton without covering controls", () => {
     expect(stylesheet).toMatch(
       /\.video-loading\s*\{[^}]*position:\s*absolute;[^}]*backdrop-filter:\s*blur\([^)]*\);[^}]*pointer-events:\s*none;/s,
