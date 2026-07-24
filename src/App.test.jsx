@@ -62,7 +62,7 @@ describe("AIGC-CHEN portfolio", () => {
     expect(sparkRoot.querySelector("main.site-shell")).toBeInTheDocument();
     expect(characterSection).toContainElement(screen.getByTestId("target-cursor"));
     expect(characterSection.querySelectorAll(".cursor-target")).toHaveLength(6);
-    expect(projectGrid.querySelectorAll(":scope > .media-card")).toHaveLength(12);
+    expect(projectGrid.querySelectorAll(":scope > .media-card")).toHaveLength(13);
     expect(container.querySelector(".border-glow-card")).not.toBeInTheDocument();
     expect(container.querySelector(".bento-grid")).not.toBeInTheDocument();
   });
@@ -118,9 +118,9 @@ describe("AIGC-CHEN portfolio", () => {
     );
   });
 
-  it("renders the final 12 works in the confirmed DOM order", () => {
+  it("renders the final 13 works in the confirmed DOM order", () => {
     const expectedTitles = [
-      "啊维塔广告", "做着玩的", "fs21", "pv", "测试成功",
+      "啊维塔广告", "氛围短片", "做着玩的", "fs21", "pv", "测试成功",
       "好想回到那个时候", "日系风格测试", "风格测试",
       "暗夜风格", "vlog.mv", "vlog", "mv.vlog",
     ];
@@ -129,7 +129,7 @@ describe("AIGC-CHEN portfolio", () => {
       (heading) => heading.textContent,
     );
 
-    expect(screen.getByText("12 PROJECTS / 2026")).toBeVisible();
+    expect(screen.getByText("13 PROJECTS / 2026")).toBeVisible();
     expect(titles).toEqual(expectedTitles);
   });
 

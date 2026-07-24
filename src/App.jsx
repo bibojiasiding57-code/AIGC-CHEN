@@ -335,7 +335,7 @@ function AppContent() {
 
         <div className="works-titleline">
           <h3 id="works-title">SELECTED PROJECTS</h3>
-          <span>12 PROJECTS / 2026</span>
+          <span>13 PROJECTS / 2026</span>
         </div>
 
         <div className="project-grid">

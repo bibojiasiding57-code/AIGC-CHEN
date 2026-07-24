@@ -12,6 +12,7 @@ const expectedCharacters = [
 
 const expectedTitles = [
   "啊维塔广告",
+  "氛围短片",
   "做着玩的",
   "fs21",
   "pv",
@@ -26,16 +27,16 @@ const expectedTitles = [
 ];
 
 describe("Works project data", () => {
-  it("keeps all 12 projects in the confirmed reading order", () => {
+  it("keeps all 13 projects in the confirmed reading order", () => {
     expect(projects.map(({ title }) => title)).toEqual(expectedTitles);
-    expect(projects).toHaveLength(12);
-    expect(new Set(projects.map(({ id }) => id)).size).toBe(12);
+    expect(projects).toHaveLength(13);
+    expect(new Set(projects.map(({ id }) => id)).size).toBe(13);
     expect(projects.some(({ id }) => id === "car-ad" || id === "realistic-short-drama")).toBe(false);
     expect(projects.every(({ type }) => type === "video")).toBe(true);
   });
 
   it("keeps the vlog-like sources unambiguous", () => {
-    expect(projects.slice(9).map(({ src }) => src)).toEqual([
+    expect(projects.slice(10).map(({ src }) => src)).toEqual([
       "/videos/vlog-mv.mp4",
       "/videos/vlog.mp4",
       "/videos/mv-vlog.mp4",
@@ -43,11 +44,11 @@ describe("Works project data", () => {
   });
 
   it("binds one stable WebP poster to every project", () => {
-    expect(projects).toHaveLength(12);
+    expect(projects).toHaveLength(13);
     expect(
       projects.every(({ id, poster }) => poster === `/media/works/posters/${id}.webp`),
     ).toBe(true);
-    expect(new Set(projects.map(({ poster }) => poster)).size).toBe(12);
+    expect(new Set(projects.map(({ poster }) => poster)).size).toBe(13);
   });
 
   it("uses only Vercel-local optimized MP4 paths", () => {

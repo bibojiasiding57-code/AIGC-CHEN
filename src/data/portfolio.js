@@ -95,6 +95,16 @@ export const projects = [
     tone: "amber",
   },
   {
+    id: "atmosphere-film",
+    title: "氛围短片",
+    category: "AI FILM / ATMOSPHERE",
+    year: "2026",
+    type: "video",
+    src: resolveVideoSrc("/videos/atmosphere-film.mp4"),
+    poster: "/media/works/posters/atmosphere-film.webp",
+    tone: "cream",
+  },
+  {
     id: "play-study",
     title: "做着玩的",
     category: "AIGC / VISUAL STUDY",
